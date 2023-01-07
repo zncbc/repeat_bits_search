@@ -16,13 +16,13 @@ struct repeat_bits
 };
 int G_flag = 0;
 
-//ÒÔÃ·É­Ğı×ªËã·¨Éú³ÉËæ»úĞòÁĞ
+//ä»¥æ¢…æ£®æ—‹è½¬ç®—æ³•ç”Ÿæˆéšæœºåºåˆ—
 void create_test_data(int file_num, int seed, __int64 file_size, std::string path_name)
 {
 
-	LARGE_INTEGER t1, t2, tc;//¼ÆÊ±¹¤¾ß
+	LARGE_INTEGER t1, t2, tc;//è®¡æ—¶å·¥å…·
 	QueryPerformanceFrequency(&tc);
-	QueryPerformanceCounter(&t1);//¼ÆÊ±¿ªÊ¼
+	QueryPerformanceCounter(&t1);//è®¡æ—¶å¼€å§‹
 
 	std::string file_name = path_name + "00000.bin";
 	const int buf_size = 1 << 18;//4*2^18=2^20B=1MB
@@ -44,17 +44,17 @@ void create_test_data(int file_num, int seed, __int64 file_size, std::string pat
 			{
 				buf[k] = mt_rd();
 			}
-			fout.write((char*)buf, buf_size * 4);//intÀàĞÍÕ¼4¸ö×Ö½Ú
+			fout.write((char*)buf, buf_size * 4);//intç±»å‹å 4ä¸ªå­—èŠ‚
 		}
 		fout.close();
 	}
 	free(buf);
-	QueryPerformanceCounter(&t2);//¼ÆÊ±½áÊø
+	QueryPerformanceCounter(&t2);//è®¡æ—¶ç»“æŸ
 	double time = (double)(t2.QuadPart - t1.QuadPart) / (double)tc.QuadPart;
-	printf("create finish ,time = %lf\n",time);  //Êä³öÊ±¼ä£¨µ¥Î»£º£ó£©
+	printf("create finish ,time = %lf\n",time);  //è¾“å‡ºæ—¶é—´ï¼ˆå•ä½ï¼šï½“ï¼‰
 }
 
-//Êä³ö¹Ì¶¨Î»ÊıµÄÊ®Áù½øÖÆ
+//è¾“å‡ºå›ºå®šä½æ•°çš„åå…­è¿›åˆ¶
 void print_binary(unsigned __int64 x, int digits)
 {
 	for (int i = digits - 1; i >= 0; i--)
@@ -76,7 +76,7 @@ int ins(unsigned __int64 data, unsigned __int32 *sort_array, unsigned __int32 *s
 	sort_tail[dat1]++;
 	if (sort_tail[dat1] == MAX_SORT_BLOCK_SIZE)
 	{
-		printf("·¢ÏÖ¹ı¶àÏàËÆÊı¾İ\n");
+		printf("å‘ç°è¿‡å¤šç›¸ä¼¼æ•°æ®\n");
 		G_flag = 1;
 		return 1;
 	}
@@ -86,16 +86,21 @@ int ins(unsigned __int64 data, unsigned __int32 *sort_array, unsigned __int32 *s
 void sort_in(int u, unsigned __int32 *sort_array, unsigned __int32 *sort_tail, std::vector<unsigned __int64> &save)
 {
 	int find_rep48_count = 0;
+	omp_set_num_threads(8);
+	#pragma omp parallel for
 	for (int i = 0; i < MAX_SORT_BLOCK_NUM; i++)
 	{
 		std::sort(sort_array + SORT_BLOCK_HEAD(i), sort_array + SORT_BLOCK_HEAD(i) + sort_tail[i]);
+	}
+	for (int i = 0; i < MAX_SORT_BLOCK_NUM; i++)
+	{
 		for (int j = SORT_BLOCK_HEAD(i) + 1; j < SORT_BLOCK_HEAD(i) + sort_tail[i]; j++)
 		{
 			if (sort_array[j - 1] == sort_array[j])
 			{
 				find_rep48_count++;
 				save.push_back((((unsigned __int64)i) << 40ll) + (((unsigned __int64)(sort_array[j])) << 8) + u);
-				//È¥µô¿ÉÄÜÖØ¸´µÄÊı¾İ£¬Ö®¼ÇÂ¼Ò»´Î
+				//å»æ‰å¯èƒ½é‡å¤çš„æ•°æ®ï¼Œä¹‹è®°å½•ä¸€æ¬¡
 				while ((j + 1 < SORT_BLOCK_HEAD(i) + sort_tail[i]) && sort_array[j] == sort_array[j + 1])
 					j++;
 			}
@@ -136,10 +141,10 @@ unsigned __int32 reverse_bit16(unsigned __int32 n)
 
 int repeat_search(int file_num, char** path_name)
 {
-	LARGE_INTEGER t1, t2, tc;//¼ÆÊ±¹¤¾ß
+	LARGE_INTEGER t1, t2, tc;//è®¡æ—¶å·¥å…·
 	QueryPerformanceFrequency(&tc);
-	QueryPerformanceCounter(&t1);//¼ÆÊ±¿ªÊ¼
-	//¼ÆËã×Ü×Ö½ÚÊı
+	QueryPerformanceCounter(&t1);//è®¡æ—¶å¼€å§‹
+	//è®¡ç®—æ€»å­—èŠ‚æ•°
 	unsigned __int64 total_size = 0;
 	unsigned __int32 total_size_mb;
 	{
@@ -154,12 +159,12 @@ int repeat_search(int file_num, char** path_name)
 		total_size_mb = total_size >> 20;
 		if (total_size % (1 << 20) != 0)
 		{
-			printf("¾¯¸æ£¬Êı¾İ´óĞ¡²»ÊÇMBµÄÕûÊı±¶£¬ÉÙÓÚMBµÄÊı¾İÄ©Î²½«±»¶ªÆú\n");
-			printf("¾¯¸æ£¬Êı¾İ´óĞ¡²»ÊÇMBµÄÕûÊı±¶£¬ÉÙÓÚMBµÄÊı¾İÄ©Î²½«±»¶ªÆú\n");
+			printf("è­¦å‘Šï¼Œæ•°æ®å¤§å°ä¸æ˜¯MBçš„æ•´æ•°å€ï¼Œå°‘äºMBçš„æ•°æ®æœ«å°¾å°†è¢«ä¸¢å¼ƒ\n");
+			printf("è­¦å‘Šï¼Œæ•°æ®å¤§å°ä¸æ˜¯MBçš„æ•´æ•°å€ï¼Œå°‘äºMBçš„æ•°æ®æœ«å°¾å°†è¢«ä¸¢å¼ƒ\n");
 		}
 	}
 	std::vector <unsigned __int64> rep56_list1, rep56_list2, rep56_list3, rep56_list4;
-	//ÕÒµ½ËùÓĞÖØ¸´³öÏÖµÄ56±ÈÌØ
+	//æ‰¾åˆ°æ‰€æœ‰é‡å¤å‡ºç°çš„56æ¯”ç‰¹
 	{
 		unsigned __int8 cmp_head[1024];
 		unsigned __int8 cmp_tail[1024];
@@ -303,32 +308,17 @@ int repeat_search(int file_num, char** path_name)
 				F.free();
 				if (G_flag)
 				{
-					printf("ÏàËÆµÄÊı¾İÌ«¶à£¬³¬³öÁËÀíÂÛÔ¤ÆÚ£¬½¨Òé¼ì²éÊı¾İµÄ¾ùÔÈĞÔ£¡\n");
+					printf("ç›¸ä¼¼çš„æ•°æ®å¤ªå¤šï¼Œè¶…å‡ºäº†ç†è®ºé¢„æœŸï¼Œå»ºè®®æ£€æŸ¥æ•°æ®çš„å‡åŒ€æ€§ï¼\n");
 					return excessive_samedata;
 				}
 				//printf("%d\n", j);
 			}
 			printf("%d %d %d %d\n", count1, count2, count3, count4);
 			F.end();
-			#pragma omp parallel sections
-			{
-			#pragma omp section
-				{
-					sort_in(i, sort_array1, sort_tail1, rep56_list1);
-				}
-				#pragma omp section
-				{
-					sort_in(i + 1, sort_array2, sort_tail2, rep56_list2);
-				}
-				#pragma omp section
-				{
-					sort_in(i + 2, sort_array3, sort_tail3, rep56_list3);
-				}
-				#pragma omp section
-				{
-					sort_in(i + 3, sort_array4, sort_tail4, rep56_list4);
-				}
-			}
+			sort_in(i, sort_array1, sort_tail1, rep56_list1);
+			sort_in(i + 1, sort_array2, sort_tail2, rep56_list2);
+			sort_in(i + 2, sort_array3, sort_tail3, rep56_list3);
+			sort_in(i + 3, sort_array4, sort_tail4, rep56_list4);
 		}
 		free(sort_array1);
 		free(sort_array2);
@@ -355,7 +345,7 @@ int repeat_search(int file_num, char** path_name)
 			print_binary(rep56_list4[i], 16); putchar('\n');
 		}
 	}
-	//½«ËùÓĞÖØ¸´µÄ56±ÈÌØ·ÅÈë²éÕÒ±í£¬¼ÇÂ¼ËùÓĞ16Î»ÏàÍ¬µÄ56±ÈÌØµÄ¿ªÊ¼½áÊøÎ»ÖÃ
+	//å°†æ‰€æœ‰é‡å¤çš„56æ¯”ç‰¹æ”¾å…¥æŸ¥æ‰¾è¡¨ï¼Œè®°å½•æ‰€æœ‰16ä½ç›¸åŒçš„56æ¯”ç‰¹çš„å¼€å§‹ç»“æŸä½ç½®
 	unsigned __int64 *rep56_save = new unsigned __int64[1 << 16];
 	unsigned __int16 *st16 = new unsigned __int16[1 << 16];
 	unsigned __int16 *ed16 = new unsigned __int16[1 << 16];
@@ -386,8 +376,8 @@ int repeat_search(int file_num, char** path_name)
 		}
 		if (save_n >= 65536)
 		{
-			printf("ÖØ¸´µÄ56±ÈÌØÊıÁ¿³¬¹ıÀíÂÛÔ¤ÆÚ£¬Çë×¢ÒâÊı¾İÊÇ·ñÓĞ´ó¶ÎÖØ¸´\n");
-			printf("ºóÃæµÄ¼ÆËã½á¹û½«½öÊä³öÇ°65535¸öÖØ¸´µÄ56±ÈÌØ\n");
+			printf("é‡å¤çš„56æ¯”ç‰¹æ•°é‡è¶…è¿‡ç†è®ºé¢„æœŸï¼Œè¯·æ³¨æ„æ•°æ®æ˜¯å¦æœ‰å¤§æ®µé‡å¤\n");
+			printf("åé¢çš„è®¡ç®—ç»“æœå°†ä»…è¾“å‡ºå‰65535ä¸ªé‡å¤çš„56æ¯”ç‰¹\n");
 			save_n = 65535;
 			G_flag = excessive_rep56;
 		}
@@ -425,7 +415,7 @@ int repeat_search(int file_num, char** path_name)
 			}
 		}
 	}
-	//ÕÒ³öËùÓĞÖØ¸´56±ÈÌØ¶ÔÓ¦Î»ÖÃµÄµÄ80±ÈÌØ
+	//æ‰¾å‡ºæ‰€æœ‰é‡å¤56æ¯”ç‰¹å¯¹åº”ä½ç½®çš„çš„80æ¯”ç‰¹
 	std::vector<repeat_bits> rb_list;
 	{
 		read_file F(file_num, path_name);
@@ -489,7 +479,7 @@ int repeat_search(int file_num, char** path_name)
 			F.free();
 			if (rb_list.size()> 1<<20)
 			{
-				printf("ÕÒµ½¹ı¶àÖØ¸´´®£¬");
+				printf("æ‰¾åˆ°è¿‡å¤šé‡å¤ä¸²ï¼Œ");
 				G_flag = excessive_repstring;
 				break;
 			}
@@ -498,7 +488,7 @@ int repeat_search(int file_num, char** path_name)
 		free(st16);
 		free(ed16);
 	}
-	//±È½Ï80±ÈÌØÊı¾İ£¬Êä³ö½á¹û
+	//æ¯”è¾ƒ80æ¯”ç‰¹æ•°æ®ï¼Œè¾“å‡ºç»“æœ
 	{
 		std::sort(rb_list.begin(), rb_list.end(), cmp_rb);
 		int count[25] = { 0 };
@@ -524,29 +514,29 @@ int repeat_search(int file_num, char** path_name)
 			}
 			if (same_bit >= 64)
 			{
-				printf("Î»ÖÃ: ");
+				printf("ä½ç½®: ");
 				print_binary(rb_list[i].offset - 10, 16);
 				printf("-");
 				print_binary(rb_list[i].offset, 16);
-				printf("Æ«ÒÆ: %d\n", rb_list[i].l);
+				printf("åç§»: %d\n", rb_list[i].l);
 				printf("\n");
 				print_binary(rb_list[i].s2, 4);
 				print_binary(rb_list[i].s1, 16);
 
-				printf("\nÎ»ÖÃ: ");
+				printf("\nä½ç½®: ");
 				print_binary(rb_list[i - 1].offset - 10, 16);
 				printf("-");
 				print_binary(rb_list[i - 1].offset, 16);
-				printf("Æ«ÒÆ: %d\n", rb_list[i - 1].l);
+				printf("åç§»: %d\n", rb_list[i - 1].l);
 				printf("\n");
 				print_binary(rb_list[i - 1].s2, 4);
 				print_binary(rb_list[i - 1].s1, 16);
 
-				printf("\nÖØ¸´³¤¶È%d\n\n", same_bit);
+				printf("\né‡å¤é•¿åº¦%d\n\n", same_bit);
 				
 			}
 		}
-		printf("»ã×Ü:");
+		printf("æ±‡æ€»:");
 		for (int i = 0; i < 24; i++)
 		{
 			printf("%4d:%4d\n", i + 56, count[i] - count[i + 1]);
