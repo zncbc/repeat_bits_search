@@ -120,6 +120,7 @@
       <OpenMP>GenerateParallelCode</OpenMP>
       <OpenMPOffloading>GenerateSPIR64CPU</OpenMPOffloading>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -130,10 +131,12 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="read_file.cpp" />
+    <ClCompile Include="rep56.cpp" />
     <ClCompile Include="repeat_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="read_file.h" />
+    <ClInclude Include="rep56.h" />
     <ClInclude Include="repeat_test.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
