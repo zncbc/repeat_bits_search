@@ -16,7 +16,7 @@ extern void print_binary(unsigned __int64 x, int digits);
 void rep56::sort_in(int u, unsigned __int32 *sort_array, unsigned __int16 *sort_tail, std::vector<unsigned __int64> &save)
 {
 	omp_set_num_threads(c_thread_num);
-	const int store_size = 1<<14;
+	const int store_size = 1<<16;
 	const int thread_ar_block = bucket_num * bucket_size / c_thread_num;
 	const int thread_ta_block = bucket_num / c_thread_num;
 	const int thread_store_block = store_size / c_thread_num;
@@ -24,7 +24,13 @@ void rep56::sort_in(int u, unsigned __int32 *sort_array, unsigned __int16 *sort_
 	unsigned __int64 *rep_store = new unsigned __int64[store_size];
 
 	memset(rep_store, 0, store_size * sizeof(unsigned __int64));
-
+	int d = 0;
+	for (int i = 0; i < 1 << 19; i++)
+	{
+		if (sort_tail[i] > d)
+			d = sort_tail[i];
+	}
+	printf("max %d\n", d);
 	#pragma omp parallel for
 	for (int i = 0; i < 1 << 16; i++)
 	{
@@ -85,7 +91,6 @@ void rep56::find(read_file &F , std::vector <unsigned __int64> &rep56_list,int t
 		c_thread_num = 2;
 	else
 		c_thread_num = 1;
-
 	bucket_num = BUCKET_NUM0 * c_thread_num;
 	bucket_size = BUCKET_SIZE0 / c_thread_num;
 	is_avx = avx;
@@ -123,6 +128,7 @@ void rep56::find(read_file &F , std::vector <unsigned __int64> &rep56_list,int t
 				F.free();
 
 				data_use = (1 << thread_num) - 1;
+				//printf("r%d\n" , j);
 				data_rd.notify_all();
 			}
 			{
@@ -134,6 +140,7 @@ void rep56::find(read_file &F , std::vector <unsigned __int64> &rep56_list,int t
 					printf("error");
 					break;
 				}
+					//printf(" ed\n");
 			}
 		}
 		sort_in(i, sort_array, sort_tail, rep56_list);
@@ -267,11 +274,14 @@ void rep56::work_thread_avx(unsigned __int32 *sort_array, unsigned __int16 *sort
 		{
 			{
 				std::unique_lock<std::mutex> lk(data_flag);
+				//printf("w%d ", thread_i);
 				data_rd.wait(lk, [this, thread_i] {return (data_use&(1 << thread_i)) != 0; });
 				if (data_use == 0xffffffff)
 				{
+					printf("ffffff");
 					return;
 				}
+				//printf("g%d ", thread_i);
 			}
 			unsigned __int32 *p = (unsigned __int32 *)buf;
 
@@ -312,6 +322,7 @@ void rep56::work_thread_avx(unsigned __int32 *sort_array, unsigned __int16 *sort
 				std::unique_lock<std::mutex> lk(data_flag);
 				data_use -= 1 << thread_i;
 				data_ep.notify_all();
+					//printf("e%d ", thread_i);
 			}
 		}
 	}

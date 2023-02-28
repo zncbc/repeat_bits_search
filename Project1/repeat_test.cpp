@@ -138,6 +138,7 @@ void find_80_offset(read_file &F, std::vector<unsigned __int64> &rep56_list, std
 {
 	unsigned __int16 *st16 = new unsigned __int16[1 << 16];
 	unsigned __int16 *ed16 = new unsigned __int16[1 << 16];
+	F.set_block(1 << 20);
 	unsigned __int32 total_size_mb = F.get_block_num();
 	unsigned char *buf;
 	unsigned __int64 f0_save_8bytes = 0;

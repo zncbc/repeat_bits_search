@@ -24,10 +24,8 @@ int para_resolve(int args, char **argv, char *result_file,int& thread_num, int& 
 	}
 	file_num = 0;
 	thread_num = 1;
-	result_file[0] = '\0';
 	avx = false;
 	printf("find file:\n");
-	const char *defualt_out_file = "result.txt";
 	int i = 1;
 	for (i = 1; i < args; i++)
 	{
@@ -45,16 +43,12 @@ int para_resolve(int args, char **argv, char *result_file,int& thread_num, int& 
 		}
 		if (strlen(argv[i]) == 2 && argv[i][0] == '-' && argv[i][1] == 'o')
 		{
-			memcpy(result_file, argv[i + 1], strlen(argv[i + 1]));
+			memcpy(result_file, argv[i + 1], strlen(argv[i + 1]) + 1);
 		}
 		if (strlen(argv[i]) == 4 && argv[i][0] == '-' && argv[i][1] == 'a' && argv[i][2] == 'v' && argv[i][3] == 'x')
 		{
 			avx = true;
 		}
-	}
-	if (result_file[0] == '\0')
-	{
-		memcpy(result_file, defualt_out_file, 11);
 	}
 	if (thread_num >= 8)
 		thread_num = 8;
@@ -66,6 +60,11 @@ int para_resolve(int args, char **argv, char *result_file,int& thread_num, int& 
 		thread_num = 1;
 	read_file F(file_num, &argv[1]);
 	printf("total size :%lld\n", F.get_total_size());
+	if (F.get_total_size() < 0)
+	{
+		printf("the path of files is not correct\n");
+		return 0;
+	}
 	printf("thread num :%d\n", thread_num);
 	printf("result file path :%s\n", result_file);
 	printf("use avx :%c\n", avx ? 'Y' : 'N');
@@ -85,10 +84,23 @@ int para_resolve(int args, char **argv, char *result_file,int& thread_num, int& 
 int main(int args, char **argv)
 {
 	int thread_num, file_num;
-	char result_file[50];
+	char result_file[50] = "result.txt";
+
 	bool avx;
 	if (para_resolve(args, argv, result_file, thread_num, file_num,avx))
 	{
 		repeat_search(file_num, argv + 1, result_file, thread_num, avx);
 	}
+	//avx = true;
+	//file_num = 10;
+	//thread_num = 8;
+	//const char *name0 = "0000.bin";
+	//char **name = new char *[10];
+	//for (int i = 0; i < 10; i++)
+	//{
+	//	name[i] = new char[50];
+	//	strcpy(name[i], name0);
+	//	name[i][3] = i + '0';
+	//}
+	//repeat_search(file_num, name, result_file, thread_num, avx);
 }

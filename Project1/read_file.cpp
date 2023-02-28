@@ -7,7 +7,8 @@ read_file::read_file(int n, char** path)
 {
 	file_n = n;
 	path_name = path;
-	buf = new char[MAX_ROUND * READ_BLOCK_SIZE];
+	block_size = READ_BLOCK_SIZE;
+	buf = new char[MAX_ROUND * block_size];
 	is_start = false;
 	total_size = 0;
 	for (int i = 0; i < n; i++)
@@ -64,14 +65,21 @@ __int64 read_file::get_total_size()
 
 __int32 read_file::get_block_num()
 {
-	return total_size / READ_BLOCK_SIZE;
+	return total_size / block_size;
+}
+
+void read_file::set_block(__int32 block_size_)
+{
+	block_size = block_size_;
+	delete buf;
+	buf = new char[MAX_ROUND * block_size];
 }
 char* read_file::read()
 {
 	std::unique_lock<std::mutex> lk(data_flag[data_block_i]);
 	data_rd.wait(lk, [this] {return (data_block_e & (1 << data_block_i)) != 0; });
 	//printf("read %d\n", data_block_i);
-	return buf + data_block_i * READ_BLOCK_SIZE;
+	return buf + data_block_i * block_size;
 }
 void read_file::free()
 {
@@ -103,7 +111,7 @@ int read_file::read_thread()
 					fin.open(path_name[file_i], std::ios::binary | std::ios::in);
 				}
 				//printf("ses %d\n", need_read_block_i);
-				fin.read(buf + need_read_block_i * READ_BLOCK_SIZE, READ_BLOCK_SIZE);
+				fin.read(buf + need_read_block_i * block_size, block_size);
 				data_block_e |= (1 << need_read_block_i);
 				data_rd.notify_all();
 				need_read_block_i = (need_read_block_i + 1) % MAX_ROUND;

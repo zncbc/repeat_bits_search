@@ -6,9 +6,9 @@
 #include <mutex>
 #include <condition_variable>
 
-#define SLEEP(x) std::this_thread::sleep_for(std::chrono::microseconds(1*x))
+#define SLEEP(x) std::this_thread::sleep_for(std::chrono::milliseconds(1*x))
 #define MAX_ROUND 8
-#define READ_BLOCK_SIZE (1<<20)
+#define READ_BLOCK_SIZE (1<<25)
 #define ERR_REP_STR 1
 
 class read_file
@@ -23,6 +23,7 @@ public:
 	bool read_if();
 	__int64 get_total_size();
 	__int32 get_block_num();
+	void set_block(__int32 block_size_);
 private:
 	int read_thread();
 	char *buf;
@@ -38,4 +39,5 @@ private:
 	char** path_name;
 	__int64 file_size;
 	__int64 total_size;
+	__int32 block_size;
 };
