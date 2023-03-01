@@ -13,5 +13,5 @@ sample: Project1.exe 0.bin -j 8 -o out.txt -avx <br>
 # Run time
 |data size|4thread|4thread avx|8thread|8thread avx|
 |----|-----|-----|-----|-----|
-|1GB|300|185|210s|145s|
-|10GB||2306|2400s|1900s|
+|1GB|300s|185s|210s|145s|
+|10GB||2306s|2400s|1900s|
