@@ -11,7 +11,7 @@ This program uses the thread acceleration of openmp and c++11. <br>
 sample: Project1.exe 0.bin -j 8 -o out.txt -avx <br>
 
 # Run time
-|data size|8thread|8thread avx|
-|----|-----|-----|
-|1GB|270s|140s|
-|10GB|2800s|1900s|
+|data size|4thread|4thread avx|8thread|8thread avx|
+|----|-----|-----|-----|-----|
+|1GB|300|185|210s|145s|
+|10GB|\|2306|2400s|1900s|
