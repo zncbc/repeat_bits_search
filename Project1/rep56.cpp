@@ -25,7 +25,7 @@ void rep56::sort_in(int u, unsigned __int32 *sort_array, unsigned __int16 *sort_
 
 	memset(rep_store, 0, store_size * sizeof(unsigned __int64));
 	int d = 0;
-	for (int i = 0; i < 1 << 19; i++)
+	for (int i = 0; i < 1 << 16 * c_thread_num; i++)
 	{
 		if (sort_tail[i] > d)
 			d = sort_tail[i];
